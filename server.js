@@ -1,4 +1,4 @@
-import express from "express"
+import express from "express";
 import gmaildatabase from "./lib/database.js";
 
 const app = express();
