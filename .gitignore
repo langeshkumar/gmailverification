@@ -1,2 +1,5 @@
 # hide node_modules
 node_modules
+
+# hide database connection
+.env
