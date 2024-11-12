@@ -3,7 +3,7 @@ import { emailverifyGet, emailverifyPost } from "../Controller/emailverification
 
 const emailRouter = express.Router();
 
-emailRouter.get('/', emailverifyGet);
+emailRouter.get('/:token', emailverifyGet);
 
 emailRouter.post('/', emailverifyPost);
 
