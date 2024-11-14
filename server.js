@@ -1,9 +1,15 @@
-import express from "express";
+import express, { json } from "express";
 import gmaildatabase from "./lib/database.js";
 import emailRouter from "./Router/emailverification.router.js";
 
 const app = express();
 const PORT = "3001";
+
+// understand json request in postman
+app.use(express.json());
+
+// understand urlencoded request in postman
+app.use(express.urlencoded({ extended: true }));
 
 // sample Router
 app.get('/', (req, res) => {

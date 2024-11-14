@@ -19,31 +19,17 @@ const emailverifyschema = new mongoose.Schema({
     },
     userpassword: {
         type: String,
-        required: true,
-        validate: [
-            {
-                validate: function (userpassword) {
-                    return userpassword > 8;
-                },
-                message: props => `( ${props, value} ) password atleast more than 8`
-            },
-            {
-                validator: function (userpassword) {
-                    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(userpassword);
-                },
-                message: props => `( ${props.value} ) this password is invalid..!`
-            }
-        ]
+        required: true
     },
     isVerified: {
         type: Boolean,
         default: false
     },
-    verificationtuken: {
+    verificationToken: {
         type: String
     }
 });
 
-const emailverifymodel = new mongoose.model("mailverification", emailverifyschema);
+const emailverifymodel = mongoose.model("mailverification", emailverifyschema);
 
 export default emailverifymodel

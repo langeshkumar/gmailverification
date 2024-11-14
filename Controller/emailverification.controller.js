@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";
 import emailverifymodel from "../Model/emailverification.model.js";
 import dotenv from "dotenv";
 dotenv.config()
@@ -13,35 +13,56 @@ const mailTransfer = nodemailer.createTransport({
     }
 })
 
-export const emailverifyGet = (req, res) => {
-    const { token } = req.params;
+export const emailverifyGet = async (req, res) => {
+    try {
+        const { token } = req.params;
+        const decode = jwt.verify(token, process.env.JWT_SECRET);
 
-    res.send({
-        token: token
-    });
+        const getDetails = await emailverifymodel.findOne({ useremail: decode.useremail, verificationToken: token });
+        if (!getDetails) {
+            res.send(400).json({
+                message: "Token is invalid"
+            });
+        }
+        getDetails.isVerified = true;
+        getDetails.verificationToken = null;
+        await getDetails.save();
+
+        res.json({ message: 'Email verified successfully' });
+
+    } catch (error) {
+        console.error(error.message);
+    }
 };
 
 export const emailverifyPost = async (req, res) => {
-    const { username, useremail, userpassword } = req.body;
     try {
+        const { username, useremail, userpassword } = req.body;
 
         if (username == '' || useremail == '' || userpassword == '') {
-            res.send(401).json({
+            res.send(400).json({
                 message: "Some inputs are empty..!"
             });
         }
 
-        const bcryptPass = bcrypt.hash(userpassword, 10);
+        const isComplexPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(userpassword);
+        if (userpassword.length > 8) {
+            res.status(400).json({
+                message: `( ${userpassword} ) this password does not meet the complexity requirements.`
+            });
+        }
+
+        const bcryptPass = await bcrypt.hash(userpassword, 10);
         const tokenGen = jwt.sign({ useremail }, process.env.JWT_SECRET);
 
         const userDetail = new emailverifymodel({
-            username,
-            useremail,
+            username: username,
+            useremail: useremail,
             userpassword: bcryptPass,
-            verificationtuken: tokenGen
+            verificationToken: tokenGen
         });
 
-        await userDetail.save();
+        const successmsg = await userDetail.save();
 
         const url = `http://localhost:3001/emailverify/${tokenGen}`;
 
